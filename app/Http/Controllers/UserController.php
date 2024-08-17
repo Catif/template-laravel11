@@ -2,48 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function store(StoreUserRequest $request)
     {
-        //
+        $input = $request->validated();
+
+        try {
+            $user = new User([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'password' => bcrypt($input['password']),
+                'email_verified_at' => now(),
+                'role_id' => Role::where('name', 'guest')->first()->id,
+            ]);
+
+            $user->save();
+        } catch (\Exception $e) {
+            return $this->error('Failed to create user', 500);
+        }
+
+        return $this->success(UserResource::make($user), 'User created successfully', 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function me()
     {
-        //
-    }
+        $user = auth()->user();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        //
-    }
+        if (is_null($user)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+        return $this->success(UserResource::make($user));
     }
 }

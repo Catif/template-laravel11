@@ -16,18 +16,18 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'name' => 'admin',
-                'level' => 1,
             ],
             [
                 'name' => 'member',
-                'level' => 8,
+            ],
+            [
+                'name' => 'guest',
             ],
         ];
 
         Role::upsert(
             $roles,
-            ['name'],
-            ['level'],
+            ['name']
         );
     }
 }
